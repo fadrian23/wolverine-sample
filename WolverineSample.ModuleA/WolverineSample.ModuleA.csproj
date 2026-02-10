@@ -7,8 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Marten" Version="8.19.0" />
+      <PackageReference Include="Marten" Version="8.20.0" />
+      <PackageReference Include="Npgsql.DependencyInjection" Version="9.0.4" />
       <PackageReference Include="WolverineFx.Marten" Version="5.14.0" />
+        <PackageReference Include="WolverineFx.RabbitMQ" Version="5.14.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\WolverineSample.SharedEvents\WolverineSample.SharedEvents.csproj" />
     </ItemGroup>
 
 </Project>

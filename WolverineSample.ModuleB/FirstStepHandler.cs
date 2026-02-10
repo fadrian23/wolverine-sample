@@ -2,6 +2,7 @@ using Marten;
 using Microsoft.Extensions.Logging;
 using Wolverine.Attributes;
 using Wolverine.Marten;
+using WolverineSample.SharedEvents;
 
 namespace WolverineSample.ModuleB;
 

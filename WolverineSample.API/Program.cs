@@ -7,66 +7,29 @@ using Wolverine.RabbitMQ;
 using WolverineSample.ModuleA;
 using WolverineSample.ModuleB;
 using WolverineSample.ServiceDefaults;
+using WolverineSample.SharedEvents;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-var moduleAConnectionString = builder.Configuration.GetConnectionString("module-a-postgres");
-var moduleBConnectionString = builder.Configuration.GetConnectionString("module-b-postgres");
-var mainConnectionString = builder.Configuration.GetConnectionString("main-postgres");
+var mainConnectionString = builder.Configuration.GetConnectionString("mainpostgres");
 
 builder.Services.AddProblemDetails();
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddMartenStore<IModuleAStore>(sp =>
-{
-    var storeOptions = new StoreOptions
-    {
-        Events =
-        {
-            DatabaseSchemaName = "modulea",
-        },
-        DatabaseSchemaName = "modulea"
-    };
-
-    storeOptions.Connection(moduleAConnectionString!);
-    return storeOptions;
-}).IntegrateWithWolverine(opt =>
-{
-    opt.SchemaName = "modulea";
-    opt.AutoCreate = AutoCreate.All;
-});
-
-builder.Services.AddMartenStore<IModuleBStore>(sp =>
-{
-    var storeOptions = new StoreOptions
-    {
-        Events =
-        {
-            DatabaseSchemaName = "moduleb",
-        },
-        DatabaseSchemaName = "moduleb"
-    };
-
-    storeOptions.Connection(moduleBConnectionString!);
-    return storeOptions;
-}).IntegrateWithWolverine(opt =>
-{
-    opt.SchemaName = "moduleb";
-    opt.AutoCreate = AutoCreate.All;
-});
-
+builder.Services.AddModuleA(builder.Configuration);
+builder.Services.AddModuleB(builder.Configuration);
+builder.Services.AddNpgsqlDataSource(mainConnectionString!, serviceKey: "main");
 builder.UseWolverine(opts =>
 {
-    opts.UseRabbitMqUsingNamedConnection("rabbitMq").AutoProvision().AutoPurgeOnStartup();
+    opts.UseRabbitMq().AutoProvision().AutoPurgeOnStartup();
     
     opts.PublishAllMessages().ToRabbitQueue("first-steps").UseDurableOutbox();
     opts.ListenToRabbitQueue("first-steps").UseDurableInbox();
-    
     opts.Policies.DisableConventionalLocalRouting();
     
-    opts.Services.AddMarten(mainConnectionString!).IntegrateWithWolverine();
+    opts.Services.AddMarten().UseNpgsqlDataSource("main").IntegrateWithWolverine();
     
     opts.MultipleHandlerBehavior = MultipleHandlerBehavior.Separated;
     opts.Durability.MessageIdentity = MessageIdentity.IdAndDestination;
@@ -76,6 +39,9 @@ builder.UseWolverine(opts =>
     
     opts.Discovery.IncludeAssembly(typeof(StartFirstStepHandler).Assembly);
     opts.Discovery.IncludeAssembly(typeof(IModuleBStore).Assembly);
+    
+    opts.Policies.UseDurableInboxOnAllListeners();
+    opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
 });
 
 var app = builder.Build();
@@ -91,4 +57,7 @@ app.MapGet("/start-a-thing", async (IMessageBus bus) =>
     .WithName("StartAThing");
 
 app.MapDefaultEndpoints();
-app.Run();
+await app.RunJasperFxCommands(args);
+
+
+// dodalem moduleA connection jako datasource

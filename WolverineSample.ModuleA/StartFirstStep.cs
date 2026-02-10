@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Wolverine;
 using Wolverine.Attributes;
 using Wolverine.Marten;
+using WolverineSample.SharedEvents;
 
 namespace WolverineSample.ModuleA;
 
@@ -11,11 +12,11 @@ public sealed record StartFirstStep(Guid ThingId);
 [MartenStore(typeof(IModuleAStore))]
 public sealed class StartFirstStepHandler
 {
-    private readonly ILogger<FirstStep> _logger;
+    private readonly ILogger<StartFirstStepHandler> _logger;
     private readonly IDocumentSession _session;
-    private readonly IMessageBus _bus;
+    private readonly IMessageContext _bus;
 
-    public StartFirstStepHandler(ILogger<FirstStep> logger, IDocumentSession session, IMessageBus bus)
+    public StartFirstStepHandler(ILogger<StartFirstStepHandler> logger, IDocumentSession session, IMessageContext bus)
     {
         _logger = logger;
         _session = session;
@@ -30,8 +31,6 @@ public sealed class StartFirstStepHandler
         var @event = new FirstStep(message.ThingId);
         
         _session.Events.Append(message.ThingId, @event);
-        await _session.SaveChangesAsync();
-        
         await _bus.PublishAsync(@event);
     }
 }
