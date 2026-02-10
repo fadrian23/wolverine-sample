@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\WolverineSample.ModuleA\WolverineSample.ModuleA.csproj" />
+        <ProjectReference Include="..\WolverineSample.ModuleB\WolverineSample.ModuleB.csproj" />
+        <ProjectReference Include="..\WolverineSample.ServiceDefaults\WolverineSample.ServiceDefaults.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Npgsql" Version="9.5.2" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2"/>
+        <PackageReference Include="WolverineFx.Marten" Version="5.14.0" />
+        <PackageReference Include="WolverineFx.Postgresql" Version="5.14.0" />
+        <PackageReference Include="WolverineFx.RabbitMQ" Version="5.14.0" />
+    </ItemGroup>
+
+</Project>
